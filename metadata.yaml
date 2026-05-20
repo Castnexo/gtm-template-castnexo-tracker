@@ -1,4 +1,4 @@
 homepage: https://castnexo.com.br
 versions:
-- sha: 0000000000000000000000000000000000000000
+- sha: 160a60598bc1c0135bff75c7ee0638ea9dc88fa0
   changeNotes: Versão inicial com suporte a vínculo cross-domain.
