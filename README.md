@@ -26,6 +26,7 @@ Sem uma conta Castnexo, o script não coleta dados.
 | Cookie de vínculo do checkout | Não | Usado quando a decoração está desativada |
 | Parâmetro de origem na URL do checkout | Não | Usado quando a decoração está desativada (padrão: `src`) |
 | Eventos do dataLayer a capturar | Não | Eventos personalizados do dataLayer (os eventos padrão já são capturados automaticamente) |
+| Domínios para vínculo cross-domain | Não | Lista de domínios envolvidos no fluxo cross-domain (mesmo cliente em domínios diferentes). Liste todos, incluindo o domínio atual. O tracker precisa estar instalado em todos os domínios listados |
 | Timeout de sessão | Não | Em milissegundos (padrão: 1800000) |
 | Validade dos UTMs | Não | Em dias (padrão: 7) |
 | Modo debug | Não | Logs no console do navegador |

@@ -101,6 +101,21 @@ ___TEMPLATE_PARAMETERS___
       },
       {
         "type": "SIMPLE_TABLE",
+        "name": "crossDomain",
+        "displayName": "Domínios para vínculo cross-domain",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Domínio",
+            "name": "domain",
+            "type": "TEXT",
+            "valueHint": "meusite.com.br"
+          }
+        ],
+        "help": "Opcional. Liste TODOS os domínios envolvidos no vínculo cross-domain — incluindo o domínio atual onde este GTM está instalado e os demais para os quais o usuário pode navegar. A mesma lista é usada em todos os sites, de forma simétrica. Mantém o mesmo session_id quando o usuário cruza entre os domínios (ex: site institucional + loja). IMPORTANTE: o Castnexo Tracker precisa estar instalado em todos os domínios listados — sem isso o vínculo não acontece do outro lado."
+      },
+      {
+        "type": "SIMPLE_TABLE",
         "name": "dlEvents",
         "displayName": "Eventos do dataLayer a capturar",
         "simpleTableColumns": [
@@ -178,6 +193,34 @@ if (queryPermission('inject_script', SCRIPT_URL)) {
     }
     if (events.length > 0) {
       setInWindow('__GM_DL_EVENTS__', events, true);
+    }
+  }
+
+  // Domínios para vínculo cross-domain. Aceita entradas com https://, http://,
+  // // ou trailing slash/path/query e normaliza para um hostname limpo em lowercase.
+  if (data.crossDomain) {
+    const domains = [];
+    for (let i = 0; i < data.crossDomain.length; i++) {
+      let d = data.crossDomain[i].domain;
+      if (!d) continue;
+      d = d.trim();
+      const lower = d.toLowerCase();
+      if (lower.indexOf('https://') === 0) {
+        d = d.substring(8);
+      } else if (lower.indexOf('http://') === 0) {
+        d = d.substring(7);
+      } else if (d.indexOf('//') === 0) {
+        d = d.substring(2);
+      }
+      const slash = d.indexOf('/');
+      if (slash !== -1) d = d.substring(0, slash);
+      const qmark = d.indexOf('?');
+      if (qmark !== -1) d = d.substring(0, qmark);
+      d = d.toLowerCase();
+      if (d) domains.push(d);
+    }
+    if (domains.length > 0) {
+      setInWindow('__GM_CROSS_DOMAIN__', domains, true);
     }
   }
 
@@ -438,6 +481,45 @@ ___WEB_PERMISSIONS___
                 "mapValue": [
                   {
                     "type": 1,
+                    "string": "__GM_CROSS_DOMAIN__"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "key"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  },
+                  {
+                    "type": 1,
+                    "string": "execute"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
                     "string": "__GM_SESSION_TIMEOUT__"
                   },
                   {
@@ -628,6 +710,27 @@ scenarios:
     mock('injectScript', function(url) {});
     runCode(mockData);
     assertThat(globals['__GM_DL_EVENTS__']).isEqualTo(['purchase', 'add_to_cart']);
+- name: Normaliza domínios cross-domain e ignora entradas vazias
+  code: |-
+    const mockData = {
+      workspaceId: 'ws-teste',
+      crossDomain: [
+        {domain: 'https://meusite.com.br'},
+        {domain: 'http://blog.exemplo.com/'},
+        {domain: 'loja.example.com.br/checkout?x=1'},
+        {domain: '  www.app.com.br  '},
+        {domain: 'OUTROSITE.COM'},
+        {domain: ''}
+      ]
+    };
+    let globals = {};
+    mock('queryPermission', true);
+    mock('setInWindow', function(key, value) {
+      globals[key] = value;
+    });
+    mock('injectScript', function(url) {});
+    runCode(mockData);
+    assertThat(globals['__GM_CROSS_DOMAIN__']).isEqualTo(['meusite.com.br', 'blog.exemplo.com', 'loja.example.com.br', 'www.app.com.br', 'outrosite.com']);
 - name: Aplica timeout de sessão, validade de UTM e debug
   code: |-
     const mockData = {
