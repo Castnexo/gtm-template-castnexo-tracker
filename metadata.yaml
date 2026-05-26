@@ -1,4 +1,4 @@
 homepage: https://castnexo.com.br
 versions:
-- sha: 160a60598bc1c0135bff75c7ee0638ea9dc88fa0
-  changeNotes: Versão inicial com suporte a vínculo cross-domain.
+- sha: 6049be02bf83b489dfbdc4d0c7ef3e7e7970a631
+  changeNotes: Corrige permissão das globais (setInWindow overrideExisting) — adiciona read=true em todas as 9 entries de access_globals.
